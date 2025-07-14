@@ -1,0 +1,9 @@
+InquirerPy>=0.3.4
+rapidfuzz>=3.0.0
+better_profanity>=0.7.0
+wordninja>=2.0.0
+nltk>=3.8.1
+rich>=13.3.2
+
+# (First time only) Download NLTK stopwords:
+# python -m nltk.downloader stopwords
