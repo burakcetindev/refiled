@@ -37,23 +37,56 @@ refiled/
 
 ## ✨ Features
 
-- 🔍 **Interactive Folder Selection**: Navigate with arrow keys through Downloads, Desktop, Documents, and custom paths. Uses a clean, recursive folder browser with emoji-labeled directories.
-- 📝 **Add/Remove Text**: Append or strip any string to/from the start or end of filenames. Supports fuzzy and reversed matching for flexible targeting.
-- 🔁 **Move Text (Experimental)**: Move a chosen phrase or word within a filename from start to end or vice versa. Still under refinement—may yield edge case issues.
-- ☠️ **Pirate/Normalize Formatting**: Convert space-based titles to dot-separated lowercase (`my.movie.title`) and reverse back into capitalized titles (`My Movie Title`).
-- ➕ **Add/Remove Prefix**: Insert or delete consistent prefixes from a batch of filenames for better grouping or classification.
-- 🧽 **Bracket Cleaner**: Removes unnecessary brackets like `[`, `(`, `{` while preserving enclosed content, cleaning up cluttered filenames.
-- 🔄 **Undo System**: Every rename operation can be reverted instantly via tracked history. Even index-based group moves are reversible.
-- 📂 **Index Repeated Files**: Detects and groups files with repeated phrases (like `Part 1`, `Part 2`) into `[indexed]/Phrase/` folders for organized browsing.
-- 🖼️ **Screenshot Parser**: Matches screenshots (`.png`, `.jpg`) to video files alphabetically, renaming screenshots to match corresponding video names for easy association.
-- 🔁 **MP4/MKV Extension Converter**: Converts file extensions from `.mp4` to `.mkv` (or vice versa) for batches of media with consistent structure.
-- 🧠 **Fuzzy + Reversed Matching**: All operations support intelligent fuzzy and reversed matching to broaden match flexibility.
-- ⚡ **Async & Parallel Execution**: Uses `asyncio` and `ThreadPoolExecutor` for lightning-fast batch processing even on large file sets.
-- 🧮 **Filtered Operations (All/Specific)**: All major operations (prefix, move, add/remove) allow targeting "all files" or filtering with a search term. Matching supports fuzzy and reversed options.
-- 🕓 **Execution Time Display**: Each operation displays how long it took in milliseconds, giving you visibility into CLI performance.
-- 🧪 **Middle-to-Start Text Movement**: The "Move Text" operation now supports moving phrases from anywhere in a filename (even in the middle), not just edges.
-- 📤 **Multi-Step Folder Prompts**: Screenshot parser now guides you with sequential prompts: step-by-step folder selections and confirmation dialogs.
-- 📁 **Smart Folder Ordering**: Common folders like Downloads, Desktop, and Movies are sorted and prioritized in navigation.
+1. 🔍 **Interactive Folder Selection**  
+   Navigate with arrow keys through Downloads, Desktop, Documents, and custom paths. Uses a clean, recursive folder browser with emoji-labeled directories.
+
+2. 📝 **Add/Remove Text**  
+   Append or strip any string to/from the start or end of filenames. Supports fuzzy and reversed matching for flexible targeting.
+
+3. 🔁 **Move Text (Experimental)**  
+   Move a chosen phrase or word within a filename from start to end or vice versa. Still under refinement—may yield edge case issues.
+
+4. ☠️ **Pirate/Normalize Formatting**  
+   Convert space-based titles to dot-separated lowercase (`my.movie.title`) and reverse back into capitalized titles (`My Movie Title`).
+
+5. ➕ **Add/Remove Prefix**  
+   Insert or delete consistent prefixes from a batch of filenames for better grouping or classification.
+
+6. 🧽 **Bracket Cleaner**  
+   Removes unnecessary brackets like `[`, `(`, `{` while preserving enclosed content, cleaning up cluttered filenames.
+
+7. 🔄 **Undo System**  
+   Every rename operation can be reverted instantly via tracked history. Even index-based group moves are reversible.
+
+8. 📂 **Index Repeated Files**  
+   Detects and groups files with repeated phrases (like `Part 1`, `Part 2`) into `[indexed]/Phrase/` folders for organized browsing.
+
+9. 🖼️ **Screenshot Parser**  
+   Matches screenshots (`.png`, `.jpg`) to video files alphabetically, renaming screenshots to match corresponding video names for easy association.
+
+10. 🔁 **MP4/MKV Extension Converter**  
+    Converts file extensions from `.mp4` to `.mkv` (or vice versa) for batches of media with consistent structure.
+
+11. 🧠 **Fuzzy + Reversed Matching**  
+    All operations support intelligent fuzzy and reversed matching to broaden match flexibility.
+
+12. ⚡ **Async & Parallel Execution**  
+    Uses `asyncio` and `ThreadPoolExecutor` for lightning-fast batch processing even on large file sets.
+
+13. 🧮 **Filtered Operations (All/Specific)**  
+    All major operations (prefix, move, add/remove) allow targeting "all files" or filtering with a search term. Matching supports fuzzy and reversed options.
+
+14. 🕓 **Execution Time Display**  
+    Each operation displays how long it took in milliseconds, giving you visibility into CLI performance.
+
+15. 🧪 **Middle-to-Start Text Movement**  
+    The "Move Text" operation now supports moving phrases from anywhere in a filename (even in the middle), not just edges.
+
+16. 📤 **Multi-Step Folder Prompts**  
+    Screenshot parser now guides you with sequential prompts: step-by-step folder selections and confirmation dialogs.
+
+17. 📁 **Smart Folder Ordering**  
+    Common folders like Downloads, Desktop, and Movies are sorted and prioritized in navigation.
 
 ---
 
@@ -200,3 +233,20 @@ For support or feature requests, please open an issue in the repository.
 
 Thank you for using the Video File Utility Toolkit!  
 Happy organizing and hacking your media library 🎥✨  
+
+---
+
+## 📅 Planned Future Features (TBI 'In Due Time')
+
+1. Add an all-lowercase formatting option alongside pirate and normalize, making three formatting choices for files.
+
+2. Extract location and timestamp data from video metadata.
+
+3. Rename and organize files chronologically and geographically for better management.
+
+4. Automated Cover Image Generation:  
+   - Generate 3 to 5 potential cover images per video.  
+   - Use OpenCV with machine learning or FFmpeg for frame extraction.  
+   - Interactive selection of the best cover image for each video.
+
+---
