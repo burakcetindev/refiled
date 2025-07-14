@@ -47,15 +47,33 @@ async def run_cli():
             console.print("Every End Is a New Beginning!", style="yellow")
             return
 
-        folder = await choose_folder()
-        if folder == "__BACK__":
-            continue
-        files = [f for f in folder.iterdir() if is_video_file(f)]
-
         if choice == "👉 Text Editing":
-            await handle_text_edit_menu(files, undo_stack)
+            text_choice = await inquirer.select(
+                message="? Choose a text editing menu:",
+                choices=[
+                    "👉 Add or Remove Text",
+                    "👉 Move Text",
+                    "👉 Pirate/Normalize Formatting",
+                    "👉 Add/remove prefix on filenames",
+                    "👉 Remove brackets from filenames",
+                    "👉 Back to main menu",
+                ],
+            ).execute_async()
+
+            if text_choice == "👉 Back to main menu":
+                continue
+
+            folder = await choose_folder()
+            if folder == "__BACK__":
+                continue
+            files = [f for f in folder.iterdir() if is_video_file(f)]
+
+            await handle_text_edit_menu(files, undo_stack, preselected_choice=text_choice)
 
         elif choice == "👉 Index Repeated Files":
+            folder = await choose_folder()
+            if folder == "__BACK__":
+                continue
             start = time.perf_counter()
             changes = await indexer.index_repeated_keywords(folder)
             duration_ms = (time.perf_counter() - start) * 1000
@@ -78,18 +96,37 @@ async def run_cli():
 
         elif choice == "👉 Screenshot Parser":
             from refiled.operations import screenshot_parser
-            result = await choose_two_folders("Select the screenshot folder:", "Select the video folder:")
-            if result == "__BACK__":
+
+            console.print("Step [1/2]: Choose video folder", style="cyan")
+            video_folder = await choose_folder()
+            if video_folder == "__BACK__":
                 continue
-            screenshot_folder, video_folder = result
+            console.print("✅ Step 1 completed", style="green")
+
+            console.print("Step [2/2]: Choose screenshot folder", style="cyan")
+            screenshot_folder = await choose_folder()
+            if screenshot_folder == "__BACK__":
+                continue
+            console.print("✅ Step 2 completed", style="green")
+
+            confirm = await inquirer.select(
+                message="Do you want to proceed?",
+                choices=["Y", "N"],
+                default="Y"
+            ).execute_async()
+            if confirm != "Y":
+                continue
+
             start = time.perf_counter()
             changes = await screenshot_parser.match_and_rename(video_folder, screenshot_folder)
             duration_ms = (time.perf_counter() - start) * 1000
+
             if changes:
                 undo.add_change_set(changes)
                 undo_stack.append(changes)
                 console.print(f"✅ Renamed {len(changes)} screenshot files.")
                 console.print(f"✅ Operation completed in {duration_ms:.2f}ms", style="cyan")
+
                 undo_prompt = await inquirer.select(
                     message="Do you want to undo the changes?",
                     choices=["Y", "N"],
@@ -103,6 +140,11 @@ async def run_cli():
                 console.print("⚠️ No matching screenshots found.")
 
         elif choice == "👉 Convert Files (.mp4 <-> .mkv)":
+            folder = await choose_folder()
+            if folder == "__BACK__":
+                continue
+            files = [f for f in folder.iterdir() if is_video_file(f)]
+
             convert_ext = await inquirer.select(
                 message="Choose conversion format:",
                 choices=[".mp4 to .mkv", ".mkv to .mp4"],
@@ -129,38 +171,47 @@ async def run_cli():
             else:
                 console.print(f"⚠️ No {to_ext} conversion candidates found.")
 
-async def handle_text_edit_menu(files, undo_stack):
-    text_choice = await inquirer.select(
-        message="? Choose a text editing menu:",
-        choices=[
-            "👉 Add or Remove Text",
-            "👉 Move Text",
-            "👉 Pirate/Normalize Formatting",
-            "👉 Add/remove prefix on filenames",
-            "👉 Remove brackets from filenames",
-            "👉 Back to main menu",
-        ],
-    ).execute_async()
+async def handle_text_edit_menu(files, undo_stack, preselected_choice=None):
+    if preselected_choice is None:
+        text_choice = await inquirer.select(
+            message="? Choose a text editing menu:",
+            choices=[
+                "👉 Add or Remove Text",
+                "👉 Move Text",
+                "👉 Pirate/Normalize Formatting",
+                "👉 Add/remove prefix on filenames",
+                "👉 Remove brackets from filenames",
+                "👉 Back to main menu",
+            ],
+        ).execute_async()
+        if text_choice == "👉 Back to main menu":
+            return
+    else:
+        text_choice = preselected_choice
 
     if text_choice == "👉 Add or Remove Text":
         mode = await inquirer.select(message="Add or remove?", choices=["add", "remove"]).execute_async()
         text = await inquirer.text(message=f"Enter text to {mode}:").execute_async()
-        position = await inquirer.select(message="Position?", choices=["start", "end"]).execute_async()
+
+        filter_mode = await inquirer.select(message="Apply to?", choices=["all", "specific"]).execute_async()
+        filter_term = None
+        if filter_mode == "specific":
+            filter_term = await inquirer.text(message="Enter search term to filter files:").execute_async()
+
+        if mode == "add":
+            position = await inquirer.select(message="Position?", choices=["start", "end"]).execute_async()
+        else:
+            position = None
+
         reversed_match = await inquirer.confirm(message="Also match reversed order?").execute_async()
         fuzzy = await inquirer.confirm(message="Enable fuzzy matching?").execute_async()
 
+        start = time.perf_counter()
         if mode == "add":
-            start = time.perf_counter()
-            changes = await add_remove.add_text(files, text, position, fuzzy, reversed_match)
-            duration_ms = (time.perf_counter() - start) * 1000
+            changes = await add_remove.add_text(files, text, position, fuzzy, reversed_match, filter_mode, filter_term)
         else:
-            filter_type = await inquirer.select(message="Remove from?", choices=["all", "specific"]).execute_async()
-            filter_term = None
-            if filter_type == "specific":
-                filter_term = await inquirer.text(message="Enter search term to filter files:").execute_async()
-            start = time.perf_counter()
-            changes = await add_remove.remove_text(files, text, fuzzy, reversed_match, filter_term)
-            duration_ms = (time.perf_counter() - start) * 1000
+            changes = await add_remove.remove_text(files, text, fuzzy, reversed_match, filter_mode, filter_term)
+        duration_ms = (time.perf_counter() - start) * 1000
 
         if changes:
             undo.add_change_set(changes)
@@ -183,11 +234,17 @@ async def handle_text_edit_menu(files, undo_stack):
         console.print("⚠️ Experimental: This operation may not always behave as expected.")
         text = await inquirer.text(message="Enter text to move:").execute_async()
         position = await inquirer.select(message="Position?", choices=["start", "end"]).execute_async()
+
+        filter_mode = await inquirer.select(message="Apply to?", choices=["all", "specific"]).execute_async()
+        filter_term = None
+        if filter_mode == "specific":
+            filter_term = await inquirer.text(message="Enter search term to filter files:").execute_async()
+
         reversed_match = await inquirer.confirm(message="Also match reversed order?").execute_async()
         fuzzy = await inquirer.confirm(message="Enable fuzzy matching?").execute_async()
 
         start = time.perf_counter()
-        changes = await move.move_text(files, text, position, fuzzy, reversed_match)
+        changes = await move.move_text(files, text, position, fuzzy, reversed_match, filter_mode, filter_term)
         duration_ms = (time.perf_counter() - start) * 1000
 
         if changes:
@@ -240,11 +297,17 @@ async def handle_text_edit_menu(files, undo_stack):
         mode = await inquirer.select(message="Add or remove prefix?", choices=["add", "remove"]).execute_async()
         prefix_value = await inquirer.text(message="Enter prefix:").execute_async()
 
+        filter_mode = await inquirer.select(message="Apply to?", choices=["all", "specific"]).execute_async()
+        filter_term = None
+        if filter_mode == "specific":
+            filter_term = await inquirer.text(message="Enter search term to filter files:").execute_async()
+
         start = time.perf_counter()
         if mode == "add":
-            changes = await prefix.add_prefix(files, prefix_value)
+            position = await inquirer.select(message="Position?", choices=["start", "end"]).execute_async()
+            changes = await prefix.add_prefix(files, prefix_value, position=position, filter_mode=filter_mode, filter_term=filter_term)
         else:
-            changes = await prefix.remove_prefix(files, prefix_value)
+            changes = await prefix.remove_prefix(files, prefix_value, filter_mode=filter_mode, filter_term=filter_term)
         duration_ms = (time.perf_counter() - start) * 1000
 
         if changes:

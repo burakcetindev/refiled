@@ -10,27 +10,27 @@
 
 ```
 refiled/
-├── main.py
-├── requirements.txt
-├── README.md
-├── rfld_image.png
+├── main.py                  # Entry point: boots up the CLI, prints startup banners, and launches the main CLI loop
+├── requirements.txt         # All Python dependencies
+├── README.md                # Full documentation
+├── rfld_image.png           # Demo image for README
 ├── refiled/
-│   ├── cli.py
-│   ├── utilities.py
+│   ├── cli.py               # Main CLI orchestration: menus, prompts, dispatching ops, tracking duration, undo prompts
+│   ├── utilities.py         # Shared helper functions: renaming, extension checks, formatting, etc.
 │   ├── filesystem/
-│   │   ├── navigator.py
-│   │   ├── validator.py
+│   │   ├── navigator.py     # Recursive folder navigation with emoji UI + path resolution + directory tree logic
+│   │   ├── validator.py     # Validates and sanitizes selected paths
 │   ├── operations/
-│   │   ├── add_remove.py
-│   │   ├── move.py
-│   │   ├── pirate.py
-│   │   ├── prefix.py
-│   │   ├── remove_brackets.py
-│   │   ├── convert.py
-│   │   ├── indexer.py
-│   │   ├── screenshot_parser.py
-│   │   ├── search.py
-│   │   ├── undo.py
+│   │   ├── add_remove.py        # Add or remove any substring from filenames (start/end); supports filtered mode
+│   │   ├── move.py              # Move phrases inside filenames (from anywhere to start/end); experimental logic
+│   │   ├── pirate.py            # Pirate-style formatter: dot lowercase & reverses to Title Case
+│   │   ├── prefix.py            # Add or remove consistent prefixes from files (start/end), supports filtering
+│   │   ├── remove_brackets.py   # Remove brackets and normalize whitespace around them
+│   │   ├── convert.py           # Convert file extensions between .mp4 and .mkv
+│   │   ├── indexer.py           # Detect & group similar files into [indexed]/ folders based on word patterns
+│   │   ├── screenshot_parser.py # Match screenshots with video files alphabetically and rename accordingly
+│   │   ├── search.py            # Fuzzy and reversed matching support across all operations
+│   │   ├── undo.py              # Global undo stack and rollback mechanism for all operations
 ```
 
 ---
@@ -49,6 +49,11 @@ refiled/
 - 🔁 **MP4/MKV Extension Converter**: Converts file extensions from `.mp4` to `.mkv` (or vice versa) for batches of media with consistent structure.
 - 🧠 **Fuzzy + Reversed Matching**: All operations support intelligent fuzzy and reversed matching to broaden match flexibility.
 - ⚡ **Async & Parallel Execution**: Uses `asyncio` and `ThreadPoolExecutor` for lightning-fast batch processing even on large file sets.
+- 🧮 **Filtered Operations (All/Specific)**: All major operations (prefix, move, add/remove) allow targeting "all files" or filtering with a search term. Matching supports fuzzy and reversed options.
+- 🕓 **Execution Time Display**: Each operation displays how long it took in milliseconds, giving you visibility into CLI performance.
+- 🧪 **Middle-to-Start Text Movement**: The "Move Text" operation now supports moving phrases from anywhere in a filename (even in the middle), not just edges.
+- 📤 **Multi-Step Folder Prompts**: Screenshot parser now guides you with sequential prompts: step-by-step folder selections and confirmation dialogs.
+- 📁 **Smart Folder Ordering**: Common folders like Downloads, Desktop, and Movies are sorted and prioritized in navigation.
 
 ---
 
@@ -108,6 +113,35 @@ video1.mp4 → video1.mkv
 - Detects common repeated 2-3 word phrases
 - Groups files under `[indexed]/Phrase_Name/`
 
+**Filtered Rename (Prefix Specific):**
+```
+Files: wow_movie.mp4, boring_clip.mp4
+Action: Add prefix "WOW_" to files containing "wow"
+Result: WOW_wow_movie.mp4, boring_clip.mp4
+```
+
+**Move From Middle to Start:**
+```
+Original: My Video Club Sandy 2023.mp4
+Move: "Club Sandy" to start
+Result: Club Sandy My Video 2023.mp4
+```
+
+---
+
+## 🔍 Matching Options Explained
+
+**Also match reversed order?**  
+- This option checks for the phrase in both forward and reversed order.  
+- Example: Searching for `"steve jobs"` will also match `"jobs steve"` if enabled.
+
+**Enable fuzzy matching?**  
+- Allows approximate or partial matches using similarity scoring.  
+- Example: `"mov trailer"` can match `"Movie_Trailer_2023.mp4"` or `"mov.triler.v2.mkv"`  
+- Useful for typos, variations, or loosely structured filenames.
+
+These options are available in operations like **Add/Remove Text**, **Prefix**, and **Move Text** when filtering files.
+
 ---
 
 ## 📦 Installation
@@ -144,6 +178,11 @@ python main.py
 
 Use arrow keys to navigate folders, select operations, and interact with prompts.
 
+Folder navigation supports:
+- Downloads, Desktop, Documents, Movies
+- Back to main menu from anywhere
+- Custom path entry
+
 ---
 
 ## 📄 License
@@ -159,4 +198,5 @@ Feel free to open issues or submit pull requests.
 
 For support or feature requests, please open an issue in the repository.
 
-Thank you for using the Video File Utility Toolkit! Happy organizing! 🎥✨
+Thank you for using the Video File Utility Toolkit!  
+Happy organizing and hacking your media library 🎥✨  

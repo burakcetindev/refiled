@@ -11,30 +11,32 @@ VIDEO_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov"}
 
 def _move_text_in_name(name: str, text: str, position: str) -> str:
     """
-    Move the first occurrence of text in name to start or end.
+    Move the first occurrence of `text` (case-insensitive) in `name` to the given position.
     Returns the modified name. If text not found, returns original.
     """
-    lower_name = name.lower()
-    lower_text = text.lower()
-    idx = lower_name.find(lower_text)
-    if idx == -1:
-        return name  # text not found
+    # Normalize and split into tokens
+    tokens = name.split()
+    text_tokens = text.split()
 
-    # Extract the matched substring respecting original casing
-    matched_substring = name[idx : idx + len(text)]
+    # Lowercase version for matching
+    lower_tokens = [t.lower() for t in tokens]
+    lower_text_tokens = [t.lower() for t in text_tokens]
+    text_len = len(text_tokens)
 
-    # Remove matched substring
-    new_name = name[:idx] + name[idx + len(text):]
-
-    # Clean spaces around removed text
-    new_name = " ".join(new_name.split())
-
-    if position == "start":
-        return matched_substring + " " + new_name
-    elif position == "end":
-        return new_name + " " + matched_substring
-    else:
-        return name
+    # Search for exact match of the sequence
+    for i in range(len(tokens) - text_len + 1):
+        if lower_tokens[i:i + text_len] == lower_text_tokens:
+            matched = tokens[i:i + text_len]
+            rest = tokens[:i] + tokens[i + text_len:]
+            if position == "start":
+                new_tokens = matched + rest
+            elif position == "end":
+                new_tokens = rest + matched
+            else:
+                return name
+            return " ".join(new_tokens)
+    
+    return name  # text not found
 
 async def _process_file(file: Path, text: str, position: str) -> tuple[Path, Path]:
     stem = file.stem
@@ -50,9 +52,10 @@ async def _process_file(file: Path, text: str, position: str) -> tuple[Path, Pat
         return (file, new_path)
     return None
 
-async def move_text(files, text, position, fuzzy=False, reversed=False):
+async def move_text(files, text, position, fuzzy=False, reversed=False, filter_mode="all", filter_term=None):
     files = [f for f in files if is_video_file(f.name)]
-    files = await filter_files(files, text, fuzzy=fuzzy, reversed=reversed)
+    if filter_mode == "specific" and filter_term:
+        files = await filter_files(files, filter_term, fuzzy=fuzzy, reversed=reversed)
     results = []
     loop = asyncio.get_running_loop()
     with ThreadPoolExecutor() as executor:

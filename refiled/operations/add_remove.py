@@ -1,5 +1,3 @@
-
-
 import asyncio
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
@@ -15,8 +13,12 @@ def _should_process(file: Path) -> bool:
 
 def _add_text_to_name(name: str, text: str, position: str) -> str:
     if position == "start":
+        if not text.endswith(" "):
+            text += " "
         return text + name
     elif position == "end":
+        if not text.startswith(" "):
+            text = " " + text
         return name + text
     return name
 
@@ -50,8 +52,11 @@ async def _process_file_remove(file: Path, text: str) -> tuple[Path, Path]:
         return (file, new_path)
     return None
 
-async def add_text(files, text, position, fuzzy=False, reversed=False):
-    files = await filter_files(files, text, fuzzy=fuzzy, reversed=reversed)
+async def add_text(files, text, position, fuzzy=False, reversed=False, filter_mode="all", filter_term=None):
+    if filter_mode == "specific" and filter_term:
+        files = await filter_files(files, filter_term, fuzzy=fuzzy, reversed=reversed)
+    else:
+        files = [f for f in files if _should_process(f)]
     results = []
     loop = asyncio.get_running_loop()
     with ThreadPoolExecutor() as executor:
@@ -65,8 +70,8 @@ async def add_text(files, text, position, fuzzy=False, reversed=False):
                 results.append(res)
     return results
 
-async def remove_text(files, text, fuzzy=False, reversed=False, filter_term=None):
-    if filter_term:
+async def remove_text(files, text, fuzzy=False, reversed=False, filter_mode="all", filter_term=None):
+    if filter_mode == "specific" and filter_term:
         files = await filter_files(files, filter_term, fuzzy=fuzzy, reversed=reversed)
     else:
         files = [f for f in files if _should_process(f)]
