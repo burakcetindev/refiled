@@ -53,9 +53,10 @@ async def run_cli():
                 choices=[
                     "👉 Add or Remove Text",
                     "👉 Move Text",
-                    "👉 Pirate/Normalize Formatting",
                     "👉 Add/remove prefix on filenames",
                     "👉 Remove brackets from filenames",
+                    "👉 Formatting Pirate/Normalize",
+                    "👉 Formatting All Caps / Lowered",
                     "👉 Back to main menu",
                 ],
             ).execute_async()
@@ -178,9 +179,10 @@ async def handle_text_edit_menu(files, undo_stack, preselected_choice=None):
             choices=[
                 "👉 Add or Remove Text",
                 "👉 Move Text",
-                "👉 Pirate/Normalize Formatting",
                 "👉 Add/remove prefix on filenames",
                 "👉 Remove brackets from filenames",
+                "👉 Formatting Pirate/Normalize",
+                "👉 Formatting All Caps / Lowered",
                 "👉 Back to main menu",
             ],
         ).execute_async()
@@ -264,7 +266,7 @@ async def handle_text_edit_menu(files, undo_stack, preselected_choice=None):
         else:
             console.print("⚠️ No changes made.")
 
-    elif text_choice == "👉 Pirate/Normalize Formatting":
+    elif text_choice == "👉 Formatting Pirate/Normalize":
         action = await inquirer.select(message="Choose formatting:", choices=["pirate", "normalize"]).execute_async()
         reversed_match = await inquirer.confirm(message="Also match reversed order?").execute_async()
         fuzzy = await inquirer.confirm(message="Enable fuzzy matching?").execute_async()
@@ -343,6 +345,36 @@ async def handle_text_edit_menu(files, undo_stack, preselected_choice=None):
             ).execute_async()
             undo_prompt = undo_prompt == "Y"
             if undo_prompt:
+                changes = await undo.undo_last_change_set()
+                console.print(f"↩️ Undid {len(changes)} changes.")
+        else:
+            console.print("⚠️ No changes made.")
+
+    elif text_choice == "👉 Formatting All Caps / Lowered":
+        from refiled.operations import low_caps
+        transformation = await inquirer.select(
+            message="Choose transformation:",
+            choices=["ALL CAPS", "all lowered"]
+        ).execute_async()
+
+        start = time.perf_counter()
+        if transformation == "ALL CAPS":
+            changes = await low_caps.convert_to_all_caps(files)
+        else:
+            changes = await low_caps.convert_to_all_lower(files)
+        duration_ms = (time.perf_counter() - start) * 1000
+
+        if changes:
+            undo.add_change_set(changes)
+            undo_stack.append(changes)
+            console.print(f"✅ Renamed {len(changes)} files.")
+            console.print(f"✅ Operation completed in {duration_ms:.2f}ms", style="cyan")
+            undo_prompt = await inquirer.select(
+                message="Do you want to undo the changes?",
+                choices=["Y", "N"],
+                default="Y"
+            ).execute_async()
+            if undo_prompt == "Y":
                 changes = await undo.undo_last_change_set()
                 console.print(f"↩️ Undid {len(changes)} changes.")
         else:

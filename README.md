@@ -31,6 +31,7 @@ refiled/
 │   │   ├── screenshot_parser.py # Match screenshots with video files alphabetically and rename accordingly
 │   │   ├── search.py            # Fuzzy and reversed matching support across all operations
 │   │   ├── undo.py              # Global undo stack and rollback mechanism for all operations
+│   │   ├── low_caps.py          # Convert filenames to ALL CAPS or all lowercase (excluding file extensions)
 ```
 
 ---
@@ -87,6 +88,10 @@ refiled/
 
 17. 📁 **Smart Folder Ordering**  
     Common folders like Downloads, Desktop, and Movies are sorted and prioritized in navigation.
+
+18. 🔠 **All Caps / Lowercase Formatting**  
+    Converts all filenames to full uppercase or full lowercase (excluding extensions).  
+    Useful for stylistic or batch normalization purposes. Operates safely around special characters and preserves extension casing.
 
 ---
 
@@ -238,13 +243,11 @@ Happy organizing and hacking your media library 🎥✨
 
 ## 📅 Planned Future Features (TBI 'In Due Time')
 
-1. Add an all-lowercase formatting option alongside pirate and normalize, making three formatting choices for files.
+1. Extract location and timestamp data from video metadata.
 
-2. Extract location and timestamp data from video metadata.
+2. Rename and organize files chronologically and geographically for better management.
 
-3. Rename and organize files chronologically and geographically for better management.
-
-4. Automated Cover Image Generation:  
+3. Automated Cover Image Generation:  
    - Generate 3 to 5 potential cover images per video.  
    - Use OpenCV with machine learning or FFmpeg for frame extraction.  
    - Interactive selection of the best cover image for each video.
