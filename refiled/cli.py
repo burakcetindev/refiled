@@ -268,12 +268,21 @@ async def handle_text_edit_menu(files, undo_stack, preselected_choice=None):
 
     elif text_choice == "👉 Formatting Pirate/Normalize":
         action = await inquirer.select(message="Choose formatting:", choices=["pirate", "normalize"]).execute_async()
+        capitalized = False
+        if action == "pirate":
+            style = await inquirer.select(
+                message="Choose pirate formatting style:",
+                choices=["all lower", "start with capital letters"],
+                default="all lower"
+            ).execute_async()
+            capitalized = style.startswith("start")
+
         reversed_match = await inquirer.confirm(message="Also match reversed order?").execute_async()
         fuzzy = await inquirer.confirm(message="Enable fuzzy matching?").execute_async()
 
         start = time.perf_counter()
         if action == "pirate":
-            changes = await pirate.pirate_format(files, fuzzy, reversed_match)
+            changes = await pirate.pirate_format(files, fuzzy, reversed_match, capitalized=capitalized)
         else:
             changes = await pirate.normalize_format(files, fuzzy, reversed_match)
         duration_ms = (time.perf_counter() - start) * 1000
