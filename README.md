@@ -160,9 +160,9 @@ Result: WOW_wow_movie.mp4, boring_clip.mp4
 
 **Move From Middle to Start:**
 ```
-Original: My Video Club Sandy 2023.mp4
-Move: "Club Sandy" to start
-Result: Club Sandy My Video 2023.mp4
+Original: My Video Fight Club 2023.mp4
+Move: "Fight Club" to start
+Result: Fight Club My Video 2023.mp4
 ```
 
 ---
